@@ -79,7 +79,7 @@ def run_smoke_test(device: torch.device) -> None:
         _check(y_f.shape == (B, 1, H, W), f"fusion output shape {y_f.shape}")
         print(f"    output={y_f.shape}  OK")
     else:
-        print("\n[4] MultiScaleFusionCNN — not yet available (Student B), skipping.")
+        print("\n[4] MultiScaleFusionCNN — not yet available")
 
     print("\n[5] Loss functions ...")
     pred_req = y_net.detach().requires_grad_(True)
