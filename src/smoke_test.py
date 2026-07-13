@@ -63,16 +63,25 @@ def run_smoke_test(device: torch.device) -> None:
     n_simple = sum(p.numel() for p in net.parameters())
     print(f"    output={y_net.shape}  params={n_simple:,}  OK")
 
-    if _FUSION_AVAILABLE:
-        print("\n[4] MultiScaleFusionCNN forward ...")
-        fusion = MultiScaleFusionCNN().to(device)
-        fusion.eval()
-        with torch.no_grad():
-            y_f = fusion(images)
-        _check(y_f.shape == (B, 1, H, W), f"fusion output shape {y_f.shape}")
-        print(f"    output={y_f.shape}  OK")
-    else:
-        print("\n[4] MultiScaleFusionCNN — not yet available")
+    print("\n[4] MultiScaleFusionCNN forward + side outputs + backward ...")
+    fusion = MultiScaleFusionCNN(image_size=H).to(device)
+    fusion.eval()
+    with torch.no_grad():
+        y_f = fusion(images)
+        d   = fusion(images, return_side_outputs=True)
+    _check(y_f.shape == (B, 1, H, W), f"fusion output shape {y_f.shape}")
+    _check(y_f.min() >= 0.0 and y_f.max() <= 1.0, "fusion values in [0,1]")
+    _check(torch.isfinite(y_f).all(), "fusion output is finite")
+    for k, v in d.items():
+        _check(v.shape == (B, 1, H, W), f"side output '{k}' shape {v.shape}")
+    n_fusion = sum(p.numel() for p in fusion.parameters())
+    overhead = n_fusion - n_simple
+    fusion.train()
+    y_f_train = fusion(images[:2])
+    y_f_train.sum().backward()
+    _check(fusion.fusion.weight.grad is not None, "fusion conv receives gradients")
+    _check(fusion.side1.weight.grad is not None, "side1 head receives gradients")
+    print(f"    output={y_f.shape}  params={n_fusion:,}  overhead=+{overhead:,}  OK")
 
     print("\n[5] Model registry ...")
     _check(type(get_model("center")).__name__ == "CenterBiasBaseline", "registry center")
