@@ -1,5 +1,6 @@
 # Local planning documents
 PLANS/
+
 # ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
@@ -20,6 +21,8 @@ build/
 venv/
 env/
 .conda/
+.env
+.env.*
 
 # ── Dataset — never commit images, maps, or archives ──────────────────────────
 data/SALICON/train_images/
@@ -39,14 +42,17 @@ outputs/checkpoints/*.pth
 outputs/logs/*.csv
 outputs/plots/*.png
 outputs/visualizations/*.png
+outputs/runs/
+*.pth
+*.pt
+*.ckpt
 # Keep the directory structure via .gitkeep
 !outputs/checkpoints/.gitkeep
 !outputs/logs/.gitkeep
 !outputs/plots/.gitkeep
 !outputs/visualizations/.gitkeep
 
-# ── Report assets (keep only small committed files) ───────────────────────────
-report_assets/qualitative_examples.png
+# Small, report-ready files under report_assets/ are intentionally tracked.
 
 # ── Notebooks ─────────────────────────────────────────────────────────────────
 .ipynb_checkpoints/
