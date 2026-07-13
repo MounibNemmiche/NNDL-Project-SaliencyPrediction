@@ -1,196 +1,153 @@
-# Saliency Prediction — SALICON
+# Lightweight Multi-Scale Saliency Prediction
 
-Lightweight Multi-Scale CNN for Vision-Based Saliency Prediction on the SALICON dataset.
+PyTorch implementation of vision-based saliency prediction on SALICON. The final study compares a fixed center-bias prior, a lightweight SimpleCNN encoder-decoder, and a MultiScaleFusionCNN that adds side outputs and learned scale fusion to the same backbone.
 
----
+## Current Integration Status
 
-## Requirements
+Student A's dataset, baseline, reproducibility, test, CI, and documentation work is available on `part_a_dataset_baselines`. Student B's fusion and train/evaluate/predict pipeline is developed independently on `part_b_fusion_experiments`. Final acceptance occurs only after both branches pass review and merge through `dev`.
 
-- Python 3.10
-- PyTorch ≥ 2.0 with the appropriate backend (CUDA / MPS / CPU)
+## Native Setup
 
----
+Python 3.10 is the submission target. Docker is optional and CPU-only.
 
-## Setup
+### venv
 
-### Option A — venv (Windows PowerShell)
-```powershell
+```bash
 python -m venv .venv
+```
+
+Windows PowerShell:
+
+```powershell
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
-### Option B — venv (macOS / Linux)
+macOS or Linux:
+
 ```bash
-python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
-### Option C — Conda
+### Conda
+
 ```bash
 conda env create -f environment.yml
 conda activate saliency
 ```
 
-### Verify installation
-```bash
-python -c "import torch; print(torch.__version__); print('CUDA:', torch.cuda.is_available())"
-# Apple Silicon
-python -c "import torch; print('MPS:', torch.backends.mps.is_available())"
-```
-
----
+For NVIDIA systems, select the correct CUDA build from the [official PyTorch installer](https://pytorch.org/get-started/locally/) if the default wheel does not match the machine. Apple Silicon uses native PyTorch with MPS; Docker cannot provide Metal acceleration.
 
 ## Dataset
 
-See [`data/README.md`](data/README.md) for download and folder structure.
+The team archive is stored locally and ignored by Git:
 
----
-
-## Smoke Test
-
-The smoke test verifies the full Part A pipeline using **synthetic data** — no real dataset required.
-
-```bash
-python src/smoke_test.py --device auto    # pick best available device
-python src/smoke_test.py --device cpu     # force CPU
-python src/smoke_test.py --device cuda    # force CUDA
-python src/smoke_test.py --device mps     # Apple Silicon
+```text
+dataset/images/images/train    10,000 images
+dataset/maps/train             10,000 saliency maps
+dataset/images/images/val       5,000 images
+dataset/maps/val                5,000 saliency maps
 ```
 
-Expected output: `Smoke test passed.`
+See [data/README.md](data/README.md) for sources, alternative paths, pairing rules, and the reproducible read check.
 
----
-
-## Training
+Generate the fixed split once:
 
 ```bash
-# SimpleCNN — 20 epochs on full SALICON
-python src/train.py \
-  --train_image_dir data/SALICON/train_images \
-  --train_map_dir   data/SALICON/train_maps \
-  --val_image_dir   data/SALICON/val_images \
-  --val_map_dir     data/SALICON/val_maps \
-  --model simple \
-  --epochs 20 \
-  --batch_size 8 \
-  --image_size 224 \
-  --loss mse \
-  --device auto
-
-# MultiScaleFusionCNN (Student B)
-python src/train.py ... --model fusion ...
-
-# Limit samples for a quick dry run
-python src/train.py ... --train_samples 2000 --val_samples 500 ...
-
-# Resume interrupted training
-python src/train.py ... --resume outputs/checkpoints/simple_last.pth ...
+python -m src.datasets.create_splits \
+  --image-dir dataset/images/images/val \
+  --map-dir dataset/maps/val \
+  --val-size 500 \
+  --seed 42 \
+  --val-output data/splits/val_seed42.txt \
+  --test-output data/splits/test_seed42.txt
 ```
 
----
+The tracked split contains 500 validation filenames and 4,500 disjoint final-test filenames. The final test is not used for tuning or checkpoint selection.
 
-## Evaluation
+## Verification
+
+These commands require no SALICON download:
 
 ```bash
-# Center-bias baseline (no checkpoint needed)
-python src/evaluate.py \
-  --test_image_dir data/SALICON/val_images \
-  --test_map_dir   data/SALICON/val_maps \
-  --model center \
-  --device auto
-
-# SimpleCNN
-python src/evaluate.py \
-  --test_image_dir data/SALICON/val_images \
-  --test_map_dir   data/SALICON/val_maps \
-  --model simple \
-  --checkpoint outputs/checkpoints/simple_best.pth \
-  --device auto
-
-# FusionCNN (Student B)
-python src/evaluate.py ... --model fusion --checkpoint outputs/checkpoints/fusion_best.pth ...
+python -m compileall -q src
+python -m pytest -q
+python src/smoke_test.py --device cpu
+python src/smoke_test.py --device auto
 ```
 
----
-
-## Prediction (single image)
+Before final submission, after fusion integration:
 
 ```bash
-python src/predict.py \
-  --image path/to/image.jpg \
-  --model fusion \
-  --checkpoint outputs/checkpoints/fusion_best.pth \
-  --device auto
+python src/smoke_test.py --device cpu --require-fusion
+python src/smoke_test.py --device cuda --require-fusion
 ```
 
----
+An explicit unavailable `cuda` or `mps` request fails instead of silently running on CPU. `auto` selects CUDA, then MPS, then CPU.
 
-## Device Support
-
-| Platform | Command |
-|---|---|
-| NVIDIA GPU | `--device cuda` |
-| Apple Silicon | `--device mps` |
-| CPU | `--device cpu` |
-| Auto-select | `--device auto` (default) |
-
-> **Note for Apple Silicon users**: MPS is preferred over CPU. Docker is CPU-only.
-
----
-
-## Optional Docker (CPU smoke test only)
+## Real-Data Read Check
 
 ```bash
-docker compose run --rm saliency python src/smoke_test.py --device cpu
+python -m src.datasets.salicon_dataset \
+  --image_dir dataset/images/images/train \
+  --map_dir dataset/maps/train \
+  --max_samples 4
 ```
 
-Docker is **not required** for normal development.
+## Experiment Pipeline
 
----
+The executable train, resume, evaluate, and predict commands will be documented here when Student B's branch is merged. Until then, the authoritative CLI and output contract is in the shared PRD and Student B plan; this branch intentionally does not advertise scripts that are not present.
+
+The final run layout is:
+
+```text
+outputs/runs/<run_name>/
+  checkpoints/best.pth
+  checkpoints/last.pth
+  training_log.csv
+  config.json
+  loss_curve.png
+  cc_curve.png
+```
+
+Checkpoints and full run folders are ignored. Small verified report evidence belongs in `report_assets/`.
+
+## Metrics
+
+| Metric | Direction | Definition |
+|---|---|---|
+| MSE | Lower | Mean squared pixel error |
+| CC | Higher | Per-image Pearson correlation, averaged across the batch |
+| SIM | Higher | Histogram intersection after each map is normalized to unit mass |
+
+The combined loss is `MSE + lambda_cc * (1 - CC)`.
+
+## Optional Docker CPU Check
+
+```bash
+docker compose build
+docker compose run --rm saliency
+```
+
+Docker is not required for development, CUDA training, or Apple Silicon MPS.
 
 ## Troubleshooting
 
-| Problem | Fix |
+| Problem | Resolution |
 |---|---|
-| `CUDA not available` | Install the CUDA-compatible PyTorch wheel from [pytorch.org](https://pytorch.org/get-started/locally/) |
-| `MPS not available` | Requires macOS 12.3+ and PyTorch ≥ 1.12 |
-| `FileNotFoundError` on dataset | Check `data/README.md` for correct folder structure |
-| `ModuleNotFoundError` | Run from the project root, not from inside `src/` |
+| Dataset path not found | Pass the archive-native paths shown above or your own explicit directories |
+| Missing saliency maps | Confirm every JPEG stem has a matching PNG stem |
+| CUDA explicitly unavailable | Install a compatible NVIDIA driver and PyTorch CUDA wheel, or choose `--device cpu` |
+| MPS explicitly unavailable | Use native macOS PyTorch on supported Apple Silicon, or choose `--device cpu` |
+| Import failure | Run commands from the repository root |
+| Fusion required but absent | Merge and install Student B's fusion branch before final acceptance |
 
----
+## Branch Policy
 
-## Project Structure
-
-```
-src/
-  datasets/salicon_dataset.py   # SALICON loader (Student A)
-  models/
-    center_bias.py              # Gaussian prior baseline (Student A)
-    simple_cnn.py               # Encoder-decoder baseline (Student A)
-    multiscale_fusion_cnn.py    # Proposed model (Student B)
-  losses/saliency_losses.py     # MSE + CC losses (Student A)
-  metrics/saliency_metrics.py   # MSE, CC, SIM metrics (Student A)
-  utils/
-    device.py                   # Cross-platform device selection (Student A)
-    seed.py                     # Reproducibility helper (Student A)
-    visualization.py            # Grid + overlay visualization (Student A)
-    checkpoint.py               # Checkpoint save/load (Student B)
-    paths.py                    # Path utilities (Student B)
-  smoke_test.py                 # Part A acceptance test (Student A)
-  train.py                      # Training loop (Student B)
-  evaluate.py                   # Evaluation script (Student B)
-  predict.py                    # Single-image prediction (Student B)
-data/
-  README.md
-  SALICON/
-    train_images/  val_images/  test_images/
-    train_maps/    val_maps/    test_maps/
-outputs/
-  checkpoints/  logs/  plots/  visualizations/
-report_assets/
-scripts/
-```
+- No direct commits to `main`.
+- Feature branches merge into `dev` through review.
+- Compile, pytest, and CPU smoke must pass before merging into `dev`.
+- `dev` merges into `main` only after tiny real-data train/resume/evaluate/predict checks and CPU/CUDA fusion smoke tests pass.
