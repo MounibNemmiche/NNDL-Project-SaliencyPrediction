@@ -3,17 +3,13 @@ from __future__ import annotations
 import torch.nn as nn
 from src.models.center_bias import CenterBiasBaseline
 from src.models.simple_cnn import SimpleCNN
+from src.models.multiscale_fusion_cnn import MultiScaleFusionCNN
 
 _REGISTRY: dict[str, type] = {
     "center": CenterBiasBaseline,
     "simple": SimpleCNN,
+    "fusion": MultiScaleFusionCNN,
 }
-
-try:
-    from src.models.multiscale_fusion_cnn import MultiScaleFusionCNN  # type: ignore
-    _REGISTRY["fusion"] = MultiScaleFusionCNN
-except ImportError:
-    pass
 
 
 def get_model(name: str, **kwargs) -> nn.Module:
@@ -24,4 +20,4 @@ def get_model(name: str, **kwargs) -> nn.Module:
     return _REGISTRY[name](**kwargs)
 
 
-__all__ = ["get_model", "CenterBiasBaseline", "SimpleCNN"]
+__all__ = ["get_model", "CenterBiasBaseline", "SimpleCNN", "MultiScaleFusionCNN"]
