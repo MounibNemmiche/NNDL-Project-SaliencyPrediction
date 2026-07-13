@@ -4,7 +4,7 @@ PyTorch implementation of vision-based saliency prediction on SALICON. The final
 
 ## Current Integration Status
 
-Student A's dataset, baseline, reproducibility, test, CI, and documentation work is available on `part_a_dataset_baselines`. Student B's fusion and train/evaluate/predict pipeline is developed independently on `part_b_fusion_experiments`. Final acceptance occurs only after both branches pass review and merge through `dev`.
+The dataset, baselines, FusionCNN, checkpoint/path utilities, tests, CI, and documentation are integrated. Student B's train/evaluate/predict pipeline and experiment scripts are still in development on `part_b_fusion_experiments`. Final acceptance occurs only after those commands and the real-data train/resume/evaluate/predict gates pass through `dev`.
 
 ## Native Setup
 
@@ -79,11 +79,10 @@ python src/smoke_test.py --device cpu
 python src/smoke_test.py --device auto
 ```
 
-Before final submission, after fusion integration:
+Student B must additionally run the same mandatory fusion smoke test on the RTX 4090:
 
 ```bash
-python src/smoke_test.py --device cpu --require-fusion
-python src/smoke_test.py --device cuda --require-fusion
+python src/smoke_test.py --device cuda
 ```
 
 An explicit unavailable `cuda` or `mps` request fails instead of silently running on CPU. `auto` selects CUDA, then MPS, then CPU.
@@ -99,7 +98,7 @@ python -m src.datasets.salicon_dataset \
 
 ## Experiment Pipeline
 
-The executable train, resume, evaluate, and predict commands will be documented here when Student B's branch is merged. Until then, the authoritative CLI and output contract is in the shared PRD and Student B plan; this branch intentionally does not advertise scripts that are not present.
+The executable train, resume, evaluate, and predict commands will be documented here when Student B adds the corresponding scripts. Until then, the authoritative CLI and output contract is in the shared PRD and Student B plan; this branch intentionally does not advertise scripts that are not present.
 
 The final run layout is:
 
@@ -113,7 +112,7 @@ outputs/runs/<run_name>/
   cc_curve.png
 ```
 
-Checkpoints and full run folders are ignored. Small verified report evidence belongs in `report_assets/`.
+Checkpoints, full run folders, and the local `report_assets/` workspace are ignored by Git.
 
 ## Metrics
 
@@ -143,7 +142,7 @@ Docker is not required for development, CUDA training, or Apple Silicon MPS.
 | CUDA explicitly unavailable | Install a compatible NVIDIA driver and PyTorch CUDA wheel, or choose `--device cpu` |
 | MPS explicitly unavailable | Use native macOS PyTorch on supported Apple Silicon, or choose `--device cpu` |
 | Import failure | Run commands from the repository root |
-| Fusion required but absent | Merge and install Student B's fusion branch before final acceptance |
+| Fusion import fails | Pull the latest tested `main` or `dev` and install all requirements |
 
 ## Branch Policy
 
