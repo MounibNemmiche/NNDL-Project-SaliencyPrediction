@@ -1,0 +1,43 @@
+# ── Data paths ────────────────────────────────────────────────────────────────
+# Provide absolute paths here OR pass them as CLI arguments.
+# CLI arguments always override config values.
+data:
+  train_image_dir: "data/SALICON/train_images"
+  train_map_dir:   "data/SALICON/train_maps"
+  val_image_dir:   "data/SALICON/val_images"
+  val_map_dir:     "data/SALICON/val_maps"
+  test_image_dir:  "data/SALICON/test_images"
+  test_map_dir:    "data/SALICON/test_maps"
+
+# ── Preprocessing ─────────────────────────────────────────────────────────────
+preprocessing:
+  image_size: 224          # images and maps are resized to image_size x image_size
+  augmentation:
+    horizontal_flip: true  # applied to image and map together
+
+# ── Model ─────────────────────────────────────────────────────────────────────
+model:
+  name: "fusion"           # "center" | "simple" | "fusion"
+
+# ── Training ──────────────────────────────────────────────────────────────────
+training:
+  epochs: 20
+  batch_size: 8
+  learning_rate: 1.0e-4
+  seed: 42
+  loss: "mse"              # "mse" | "combined"
+  lambda_cc: 0.1           # weight of CC term in combined loss
+  train_samples: null      # null = use all; integer = limit
+  val_samples: null
+
+# ── Evaluation ────────────────────────────────────────────────────────────────
+evaluation:
+  test_samples: null
+  batch_size: 8
+
+# ── Outputs ───────────────────────────────────────────────────────────────────
+outputs:
+  checkpoint_dir: "outputs/checkpoints"
+  log_dir:        "outputs/logs"
+  plot_dir:       "outputs/plots"
+  vis_dir:        "outputs/visualizations"

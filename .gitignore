@@ -1,63 +1,60 @@
-# Local planning documents
-PLANS/
-
-# Python cache and build artifacts
+# ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
-*$py.class
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-htmlcov/
-build/
-dist/
+*.pyo
+*.pyd
+*.so
+*.egg
 *.egg-info/
+dist/
+build/
+.eggs/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
 
-# Virtual environments
+# ── Virtual environments ───────────────────────────────────────────────────────
 .venv/
 venv/
 env/
-.env
-.env.*
+.conda/
 
-# Jupyter
-.ipynb_checkpoints/
-
-# Dataset files and archives
-data/*
-!data/
-!data/README.md
+# ── Dataset — never commit images, maps, or archives ──────────────────────────
+data/SALICON/train_images/
+data/SALICON/val_images/
+data/SALICON/test_images/
+data/SALICON/train_maps/
+data/SALICON/val_maps/
+data/SALICON/test_maps/
+data/downloads/
 *.zip
 *.tar
 *.tar.gz
 *.tgz
-*.7z
-*.rar
-*.jpg
-*.jpeg
-*.png
-*.bmp
-*.tif
-*.tiff
 
-# Generated outputs
-outputs/*
-!outputs/
-!outputs/README.md
-*.pth
-*.pt
-*.ckpt
+# ── Large outputs ─────────────────────────────────────────────────────────────
+outputs/checkpoints/*.pth
+outputs/logs/*.csv
+outputs/plots/*.png
+outputs/visualizations/*.png
+# Keep the directory structure via .gitkeep
+!outputs/checkpoints/.gitkeep
+!outputs/logs/.gitkeep
+!outputs/plots/.gitkeep
+!outputs/visualizations/.gitkeep
 
-# Logs and temporary files
-*.log
-logs/
-tmp/
-temp/
+# ── Report assets (keep only small committed files) ───────────────────────────
+report_assets/qualitative_examples.png
 
-# OS and editor files
+# ── Notebooks ─────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ── OS ────────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
 .vscode/
 .idea/
+*.swp
