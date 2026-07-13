@@ -50,19 +50,22 @@ class SimpleCNN(nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if x.ndim != 4 or x.shape[1] != 3:
+            raise ValueError(f"Expected [B, 3, H, W] input, got {x.shape}")
+        input_size = x.shape[-2:]
         e1 = self.enc1(x)
         e2 = self.enc2(e1)
         e3 = self.enc3(e2)
 
         b = self.bottleneck(e3)
 
-        d = F.interpolate(b,  scale_factor=2, mode="bilinear", align_corners=False)
+        d = F.interpolate(b, size=e2.shape[-2:], mode="bilinear", align_corners=False)
         d = self.dec3(d)
 
-        d = F.interpolate(d,  scale_factor=2, mode="bilinear", align_corners=False)
+        d = F.interpolate(d, size=e1.shape[-2:], mode="bilinear", align_corners=False)
         d = self.dec2(d)
 
-        d = F.interpolate(d,  scale_factor=2, mode="bilinear", align_corners=False)
+        d = F.interpolate(d, size=input_size, mode="bilinear", align_corners=False)
         d = self.dec1(d)
 
         return self.head(d)
