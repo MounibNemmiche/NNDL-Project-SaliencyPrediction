@@ -1,0 +1,5 @@
+services:
+  saliency:
+    build: .
+    image: saliency-prediction-cpu
+    command: python src/smoke_test.py --device cpu

@@ -1,71 +1,73 @@
-# Dataset — SALICON
+# SALICON Dataset
 
-The SALICON dataset is **not committed to Git**. Download and place files manually.
+The dataset is local-only and must never be committed. This project uses the 10,000 labeled SALICON training samples and the 5,000 labeled validation samples. The unlabeled test images and raw `.mat` fixation files are not needed for model training or the final local comparison.
 
----
+Dataset references:
 
-## Expected Folder Structure
+- Official project: <https://salicon.net/>
+- Public mirror identified in the project plan: <https://www.kaggle.com/datasets/roshan401/salicon>
 
+The final report must identify the exact archive or mirror actually shared by the team.
+
+## Team Layout
+
+The downloaded archives currently use this layout:
+
+```text
+dataset/
+  images/images/
+    train/             10,000 COCO JPEG images
+    val/                5,000 COCO JPEG images
+    test/               5,000 unlabeled JPEG images
+  maps/
+    train/             10,000 saliency PNG maps
+    val/                5,000 saliency PNG maps
+  fixations/           raw MAT files; unused by this project
 ```
-data/
-  SALICON/
-    train_images/       ← COCO train 2014 images used by SALICON (~10k JPEGs)
-    train_maps/         ← corresponding saliency maps (grayscale PNGs)
-    val_images/         ← COCO val 2014 images used by SALICON (~5k JPEGs)
-    val_maps/           ← corresponding saliency maps (grayscale PNGs)
-    test_images/        ← COCO test images (no maps — for blind prediction)
-    test_maps/          ← leave empty or omit
+
+Image and map stems must match, for example:
+
+```text
+COCO_train2014_000000000009.jpg
+COCO_train2014_000000000009.png
 ```
 
-Filenames must match: `COCO_train2014_000000XXXXXX.jpg` ↔ `COCO_train2014_000000XXXXXX.png`
+Do not move or duplicate the dataset. Pass these directories to the CLI, or use the defaults in `config.yaml`.
 
----
+## Deterministic Validation and Test Split
 
-## Download
-
-### Option 1 — Official SALICON website
-1. Register at http://salicon.net/
-2. Download:
-   - `train_images.zip` (images)
-   - `val_images.zip`
-   - `test_images.zip`
-   - `train_maps.zip` (saliency maps)
-   - `val_maps.zip`
-3. Extract each archive into the corresponding folder above.
-
-### Option 2 — Kaggle (unofficial mirror)
-Search for "SALICON saliency dataset" on Kaggle.
-
----
-
-## Alternative Paths
-
-If your data lives elsewhere, pass paths explicitly to every script:
+The official SALICON validation data is divided into a 500-sample validation set for checkpoint selection and a disjoint 4,500-sample final test set. Generate the tracked filename manifests with:
 
 ```bash
-python src/train.py \
-  --train_image_dir /path/to/your/train_images \
-  --train_map_dir   /path/to/your/train_maps \
-  --val_image_dir   /path/to/your/val_images \
-  --val_map_dir     /path/to/your/val_maps \
-  ...
+python -m src.datasets.create_splits \
+  --image-dir dataset/images/images/val \
+  --map-dir dataset/maps/val \
+  --val-size 500 \
+  --seed 42 \
+  --val-output data/splits/val_seed42.txt \
+  --test-output data/splits/test_seed42.txt
 ```
 
----
+Never tune architecture, loss, or hyperparameters on `test_seed42.txt`.
 
-## Smoke Test (no real data required)
-
-The smoke test uses **synthetic random tensors** and does not need real images:
+## Reproducible Read Check
 
 ```bash
-python src/smoke_test.py --device cpu
+python -m src.datasets.salicon_dataset \
+  --image_dir dataset/images/images/train \
+  --map_dir dataset/maps/train \
+  --max_samples 4
 ```
 
----
+## Alternative Layouts
 
-## Gitignore Notes
+The loader does not hard-code the team layout. A professor may instead use:
 
-The following are automatically excluded from Git (see `.gitignore`):
-- `data/SALICON/**` — all images and maps
-- `*.zip`, `*.tar`, `*.tar.gz` — raw archives
-- `outputs/checkpoints/*.pth` — model checkpoints
+```text
+data/SALICON/train_images
+data/SALICON/train_maps
+data/SALICON/val_images
+data/SALICON/val_maps
+```
+
+In that case, pass those paths explicitly. Dataset archives, images, maps, credentials, and private download links remain ignored by Git.

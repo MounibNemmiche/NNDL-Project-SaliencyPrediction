@@ -1,43 +1,38 @@
-# ── Data paths ────────────────────────────────────────────────────────────────
-# Provide absolute paths here OR pass them as CLI arguments.
-# CLI arguments always override config values.
+# CLI arguments override these portable project defaults.
 data:
-  train_image_dir: "data/SALICON/train_images"
-  train_map_dir:   "data/SALICON/train_maps"
-  val_image_dir:   "data/SALICON/val_images"
-  val_map_dir:     "data/SALICON/val_maps"
-  test_image_dir:  "data/SALICON/test_images"
-  test_map_dir:    "data/SALICON/test_maps"
+  train_image_dir: "dataset/images/images/train"
+  train_map_dir: "dataset/maps/train"
+  val_image_dir: "dataset/images/images/val"
+  val_map_dir: "dataset/maps/val"
+  test_image_dir: "dataset/images/images/test"
+  val_manifest: "data/splits/val_seed42.txt"
+  test_manifest: "data/splits/test_seed42.txt"
 
-# ── Preprocessing ─────────────────────────────────────────────────────────────
 preprocessing:
-  image_size: 224          # images and maps are resized to image_size x image_size
+  image_size: 224
   augmentation:
-    horizontal_flip: true  # applied to image and map together
+    horizontal_flip: true
 
-# ── Model ─────────────────────────────────────────────────────────────────────
 model:
-  name: "fusion"           # "center" | "simple" | "fusion"
+  name: "fusion"
 
-# ── Training ──────────────────────────────────────────────────────────────────
 training:
   epochs: 20
   batch_size: 8
   learning_rate: 1.0e-4
   seed: 42
-  loss: "mse"              # "mse" | "combined"
-  lambda_cc: 0.1           # weight of CC term in combined loss
-  train_samples: null      # null = use all; integer = limit
+  loss: "mse"
+  lambda_cc: 0.1
+  train_samples: null
   val_samples: null
+  num_workers: 0
+  device: "auto"
+  amp: false
 
-# ── Evaluation ────────────────────────────────────────────────────────────────
 evaluation:
   test_samples: null
   batch_size: 8
 
-# ── Outputs ───────────────────────────────────────────────────────────────────
 outputs:
-  checkpoint_dir: "outputs/checkpoints"
-  log_dir:        "outputs/logs"
-  plot_dir:       "outputs/plots"
-  vis_dir:        "outputs/visualizations"
+  root_dir: "outputs/runs"
+  visualization_dir: "outputs/visualizations"

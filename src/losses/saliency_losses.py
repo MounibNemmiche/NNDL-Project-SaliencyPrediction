@@ -3,58 +3,46 @@ from __future__ import annotations
 import torch
 import torch.nn.functional as F
 
+
 EPS = 1e-8
 
 
+def _validate_shapes(pred: torch.Tensor, target: torch.Tensor) -> None:
+    if pred.shape != target.shape:
+        raise ValueError(f"Prediction and target shapes differ: {pred.shape} vs {target.shape}")
+    if pred.ndim < 2:
+        raise ValueError("Prediction and target must include batch and feature dimensions")
+
+
 def mse_loss(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    _validate_shapes(pred, target)
     return F.mse_loss(pred, target)
 
 
 def cc_score(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-    B = pred.shape[0]
-    p = pred.view(B, -1)
-    g = target.view(B, -1)
+    _validate_shapes(pred, target)
+    pred_flat = pred.float().flatten(start_dim=1)
+    target_flat = target.float().flatten(start_dim=1)
 
-    p_mu  = p.mean(dim=1, keepdim=True)
-    g_mu  = g.mean(dim=1, keepdim=True)
-    p_std = p.std(dim=1, keepdim=True).clamp(min=EPS)
-    g_std = g.std(dim=1, keepdim=True).clamp(min=EPS)
-
-    cov  = ((p - p_mu) * (g - g_mu)).mean(dim=1)
-    corr = cov / (p_std.squeeze(1) * g_std.squeeze(1)).clamp(min=EPS)
-    return corr.mean()
+    pred_centered = pred_flat - pred_flat.mean(dim=1, keepdim=True)
+    target_centered = target_flat - target_flat.mean(dim=1, keepdim=True)
+    covariance = (pred_centered * target_centered).mean(dim=1)
+    pred_std = pred_flat.std(dim=1, correction=0)
+    target_std = target_flat.std(dim=1, correction=0)
+    denominator = (pred_std * target_std).clamp_min(EPS)
+    correlation = (covariance / denominator).clamp(-1.0, 1.0)
+    return correlation.mean()
 
 
 def cc_loss(pred: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-    return -cc_score(pred, target)
+    return 1.0 - cc_score(pred, target)
 
 
 def combined_mse_cc_loss(
-    pred:      torch.Tensor,
-    target:    torch.Tensor,
+    pred: torch.Tensor,
+    target: torch.Tensor,
     lambda_cc: float = 0.1,
 ) -> torch.Tensor:
+    if lambda_cc < 0:
+        raise ValueError("lambda_cc must be non-negative")
     return mse_loss(pred, target) + lambda_cc * cc_loss(pred, target)
-
-
-if __name__ == "__main__":
-    import torch
-    torch.manual_seed(0)
-    B, H, W = 4, 32, 32
-
-    pred   = torch.rand(B, 1, H, W, requires_grad=True)
-    target = torch.rand(B, 1, H, W)
-
-    l_mse  = mse_loss(pred, target)
-    l_cc   = cc_loss(pred, target)
-    l_comb = combined_mse_cc_loss(pred, target, lambda_cc=0.1)
-    cc_val = cc_score(pred, target)
-
-    print(f"  mse_loss              : {l_mse.item():.6f}")
-    print(f"  cc_score              : {cc_val.item():.6f}")
-    print(f"  cc_loss               : {l_cc.item():.6f}")
-    print(f"  combined_mse_cc_loss  : {l_comb.item():.6f}")
-
-    l_comb.backward()
-    print(f"  grad norm on pred     : {pred.grad.norm():.6f}")
-    print("saliency_losses.py OK")
