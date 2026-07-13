@@ -1,0 +1,16 @@
+.git
+.github
+.venv
+PLANS
+dataset
+data/SALICON
+outputs
+report_assets
+Reference Papers
+__pycache__
+*.pyc
+*.pth
+*.pt
+*.ckpt
+*.zip
+*.tar*

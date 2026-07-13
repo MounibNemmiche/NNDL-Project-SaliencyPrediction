@@ -16,6 +16,8 @@ build/
 .mypy_cache/
 .pytest_cache/
 .ruff_cache/
+.coverage
+htmlcov/
 
 # ── Virtual environments ───────────────────────────────────────────────────────
 .venv/
@@ -24,6 +26,8 @@ env/
 .conda/
 .env
 .env.*
+.kaggle/
+kaggle.json
 
 # ── Dataset — never commit images, maps, or archives ──────────────────────────
 data/SALICON/train_images/

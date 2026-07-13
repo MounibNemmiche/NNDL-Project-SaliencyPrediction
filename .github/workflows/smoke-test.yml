@@ -1,0 +1,25 @@
+name: CPU checks
+
+"on":
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+      - name: Install CPU PyTorch
+        run: python -m pip install --index-url https://download.pytorch.org/whl/cpu torch torchvision
+      - name: Install project dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile source
+        run: python -m compileall -q src
+      - name: Run focused tests
+        run: python -m pytest -q
+      - name: Run CPU smoke test
+        run: python src/smoke_test.py --device cpu
