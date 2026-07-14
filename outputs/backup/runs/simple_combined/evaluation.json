@@ -1,0 +1,10 @@
+{
+    "model": "simple",
+    "checkpoint": "outputs/runs/simple_combined/checkpoints/best.pth",
+    "manifest": "data\\splits\\val_seed42.txt",
+    "split_hash": "28634c48abb6",
+    "samples_evaluated": 500,
+    "MSE": 0.04259456318616867,
+    "CC": 0.018500355988740922,
+    "SIM": 0.8363131279945374
+}

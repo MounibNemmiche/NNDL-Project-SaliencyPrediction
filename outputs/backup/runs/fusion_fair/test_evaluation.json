@@ -1,0 +1,10 @@
+{
+    "model": "fusion",
+    "checkpoint": "outputs/runs/fusion_fair/checkpoints/best.pth",
+    "manifest": "data\\splits\\test_seed42.txt",
+    "split_hash": "7ad21b6a799f",
+    "samples_evaluated": 4500,
+    "MSE": 0.045257490068674085,
+    "CC": 0.01754179450041718,
+    "SIM": 0.8404425978130764
+}
