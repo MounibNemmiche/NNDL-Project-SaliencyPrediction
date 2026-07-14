@@ -2,6 +2,7 @@
 PLANS/
 dataset/
 report_assets/
+NNDL- benchmark results on Saliency Predicion/
 
 # ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
