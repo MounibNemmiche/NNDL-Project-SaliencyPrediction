@@ -1,5 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
+set RUN_NAME=dummy_run_%RANDOM%
 echo =====================================================================
 echo   Vision Saliency Prediction - End-to-End Pipeline Verification
 echo =====================================================================
@@ -30,7 +31,7 @@ if %errorlevel% neq 0 (
 
 echo.
 echo [3] Running dummy training (2 epochs, CPU, Fusion model)...
-python train.py --model fusion --epochs 2 --batch-size 2 --train-image-dir data/dummy/images/train --train-map-dir data/dummy/maps/train --val-image-dir data/dummy/images/val --val-map-dir data/dummy/maps/val --val-manifest data/dummy/val_manifest.txt --run-name dummy_run --device cpu --train-samples 4 --val-samples 2
+python src/train.py --model fusion --epochs 2 --batch-size 2 --train-image-dir data/dummy/images/train --train-map-dir data/dummy/maps/train --val-image-dir data/dummy/images/val --val-map-dir data/dummy/maps/val --val-manifest data/dummy/val_manifest.txt --run-name %RUN_NAME% --device cpu --train-samples 4 --val-samples 2
 if %errorlevel% neq 0 (
     echo [ERROR] Training failed.
     exit /b 1
@@ -38,7 +39,7 @@ if %errorlevel% neq 0 (
 
 echo.
 echo [4] Running evaluation on validation manifest...
-python evaluate.py --checkpoint outputs/runs/dummy_run/checkpoints/best.pth --manifest data/dummy/val_manifest.txt --image-dir data/dummy/images/val --map-dir data/dummy/maps/val --output outputs/runs/dummy_run/evaluation.json --visualize outputs/runs/dummy_run/prediction_grid.png --device cpu
+python src/evaluate.py --checkpoint outputs/runs/%RUN_NAME%/checkpoints/best.pth --manifest data/dummy/val_manifest.txt --image-dir data/dummy/images/val --map-dir data/dummy/maps/val --output-dir outputs/runs/%RUN_NAME%/evaluation --visualize outputs/runs/%RUN_NAME%/prediction_grid.png --device cpu
 if %errorlevel% neq 0 (
     echo [ERROR] Evaluation failed.
     exit /b 1
@@ -46,7 +47,7 @@ if %errorlevel% neq 0 (
 
 echo.
 echo [5] Generating predictions on test images...
-python predict.py --checkpoint outputs/runs/dummy_run/checkpoints/best.pth --input data/dummy/images/test --output-dir outputs/runs/dummy_run/predictions --save-raw --save-overlay --save-heatmap --device cpu
+python src/predict.py --checkpoint outputs/runs/%RUN_NAME%/checkpoints/best.pth --input data/dummy/images/test --output-dir outputs/runs/%RUN_NAME%/predictions --save-raw --save-overlay --save-heatmap --device cpu
 if %errorlevel% neq 0 (
     echo [ERROR] Prediction generation failed.
     exit /b 1
@@ -55,6 +56,6 @@ if %errorlevel% neq 0 (
 echo.
 echo =====================================================================
 echo   Pipeline verified successfully!
-echo   Outputs are saved in: outputs/runs/dummy_run/
+echo   Outputs are saved in: outputs/runs/%RUN_NAME%/
 echo =====================================================================
 pause

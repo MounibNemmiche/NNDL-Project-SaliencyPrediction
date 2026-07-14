@@ -1,5 +1,7 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
+
+RUN_NAME="dummy_run_$(date +%Y%m%d_%H%M%S)"
 
 echo "====================================================================="
 echo "  Vision Saliency Prediction - End-to-End Pipeline Verification"
@@ -41,7 +43,7 @@ python -m src.datasets.create_splits \
 
 echo
 echo "[3] Running dummy training (2 epochs, CPU, Fusion model)..."
-python train.py \
+python src/train.py \
   --model fusion \
   --epochs 2 \
   --batch-size 2 \
@@ -50,28 +52,28 @@ python train.py \
   --val-image-dir data/dummy/images/val \
   --val-map-dir data/dummy/maps/val \
   --val-manifest data/dummy/val_manifest.txt \
-  --run-name dummy_run \
+  --run-name "$RUN_NAME" \
   --device cpu \
   --train-samples 4 \
   --val-samples 2
 
 echo
 echo "[4] Running evaluation on validation manifest..."
-python evaluate.py \
-  --checkpoint outputs/runs/dummy_run/checkpoints/best.pth \
+python src/evaluate.py \
+  --checkpoint "outputs/runs/$RUN_NAME/checkpoints/best.pth" \
   --manifest data/dummy/val_manifest.txt \
   --image-dir data/dummy/images/val \
   --map-dir data/dummy/maps/val \
-  --output outputs/runs/dummy_run/evaluation.json \
-  --visualize outputs/runs/dummy_run/prediction_grid.png \
+  --output-dir "outputs/runs/$RUN_NAME/evaluation" \
+  --visualize "outputs/runs/$RUN_NAME/prediction_grid.png" \
   --device cpu
 
 echo
 echo "[5] Generating predictions on test images..."
-python predict.py \
-  --checkpoint outputs/runs/dummy_run/checkpoints/best.pth \
+python src/predict.py \
+  --checkpoint "outputs/runs/$RUN_NAME/checkpoints/best.pth" \
   --input data/dummy/images/test \
-  --output-dir outputs/runs/dummy_run/predictions \
+  --output-dir "outputs/runs/$RUN_NAME/predictions" \
   --save-raw \
   --save-overlay \
   --save-heatmap \
@@ -80,5 +82,5 @@ python predict.py \
 echo
 echo "====================================================================="
 echo "  Pipeline verified successfully!"
-echo "  Outputs are saved in: outputs/runs/dummy_run/"
+echo "  Outputs are saved in: outputs/runs/$RUN_NAME/"
 echo "====================================================================="

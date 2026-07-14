@@ -4,7 +4,10 @@ data:
   train_map_dir: "dataset/maps/train"
   val_image_dir: "dataset/images/images/val"
   val_map_dir: "dataset/maps/val"
-  test_image_dir: "dataset/images/images/test"
+  # The labeled final-test manifest is a disjoint subset of SALICON validation.
+  test_image_dir: "dataset/images/images/val"
+  test_map_dir: "dataset/maps/val"
+  train_manifest: null
   val_manifest: "data/splits/val_seed42.txt"
   test_manifest: "data/splits/test_seed42.txt"
 
@@ -21,7 +24,7 @@ training:
   batch_size: 8
   learning_rate: 1.0e-4
   seed: 42
-  loss: "mse"
+  loss: "mse_cc"
   lambda_cc: 0.1
   train_samples: null
   val_samples: null

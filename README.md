@@ -4,7 +4,7 @@ PyTorch implementation of vision-based saliency prediction on SALICON. The final
 
 ## Current Integration Status
 
-The dataset, baselines, FusionCNN, checkpoint/path utilities, tests, CI, and documentation are integrated. Student B's train/evaluate/predict pipeline and experiment scripts are still in development on `part_b_fusion_experiments`. Final acceptance occurs only after those commands and the real-data train/resume/evaluate/predict gates pass through `dev`.
+The dataset, three models, checkpoint/path utilities, and executable train/evaluate/predict pipeline are integrated and covered by CPU/CUDA tests. Final training results remain pending; uploaded synthetic pipeline checks are not final SALICON evidence.
 
 ## Native Setup
 
@@ -98,7 +98,59 @@ python -m src.datasets.salicon_dataset \
 
 ## Experiment Pipeline
 
-The executable train, resume, evaluate, and predict commands will be documented here when Student B adds the corresponding scripts. Until then, the authoritative CLI and output contract is in the shared PRD and Student B plan; this branch intentionally does not advertise scripts that are not present.
+Screen a model with a fixed validation split:
+
+```bash
+python src/train.py \
+  --run-name fusion_msecc_screen_seed42 \
+  --model fusion \
+  --epochs 10 \
+  --batch-size 32 \
+  --loss mse_cc \
+  --lambda-cc 0.1 \
+  --train-samples 2000 \
+  --val-manifest data/splits/val_seed42.txt \
+  --device cuda \
+  --amp
+```
+
+Resume the same run without changing its model or loss contract:
+
+```bash
+python src/train.py \
+  --resume outputs/runs/fusion_msecc_screen_seed42/checkpoints/last.pth \
+  --epochs 20 \
+  --device cuda \
+  --amp
+```
+
+Evaluate the fixed center baseline or a learned checkpoint on the disjoint labeled final-test manifest:
+
+```bash
+python src/evaluate.py \
+  --model center \
+  --manifest data/splits/test_seed42.txt \
+  --output-dir outputs/evaluation/final_seed42 \
+  --device cuda
+
+python src/evaluate.py \
+  --checkpoint outputs/runs/fusion_final_seed42/checkpoints/best.pth \
+  --manifest data/splits/test_seed42.txt \
+  --output-dir outputs/evaluation/final_seed42 \
+  --visualize outputs/evaluation/final_seed42/fusion_grid.png \
+  --device cuda
+```
+
+Generate raw, heatmap, and overlay predictions. CUDA-trained checkpoints can be loaded on CPU or MPS:
+
+```bash
+python src/predict.py \
+  --checkpoint outputs/runs/fusion_final_seed42/checkpoints/best.pth \
+  --input dataset/images/images/val/COCO_val2014_000000000164.jpg \
+  --output-dir outputs/predictions/fusion_final_seed42 \
+  --save-raw --save-heatmap --save-overlay \
+  --device cpu
+```
 
 The final run layout is:
 
@@ -113,6 +165,7 @@ outputs/runs/<run_name>/
 ```
 
 Checkpoints, full run folders, and the local `report_assets/` workspace are ignored by Git.
+Evaluation writes `evaluation_results.csv`, `per_image_metrics.csv`, a JSON summary, an optional qualitative grid, and `fusion_weights.csv` for FusionCNN. Training logs include epoch duration and peak CUDA memory.
 
 ## Metrics
 
