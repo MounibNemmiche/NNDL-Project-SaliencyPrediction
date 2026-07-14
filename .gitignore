@@ -38,6 +38,7 @@ data/SALICON/train_maps/
 data/SALICON/val_maps/
 data/SALICON/test_maps/
 data/downloads/
+data/dummy/
 *.zip
 *.tar
 *.tar.gz
@@ -49,6 +50,9 @@ outputs/logs/*.csv
 outputs/plots/*.png
 outputs/visualizations/*.png
 outputs/runs/
+outputs/backup/
+outputs/evaluation/
+outputs/predictions/
 *.pth
 *.pt
 *.ckpt
