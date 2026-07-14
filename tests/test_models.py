@@ -4,6 +4,7 @@ import pytest
 import torch
 
 from src.models.center_bias import CenterBiasBaseline
+from src.models.multiscale_fusion_cnn import MultiScaleFusionCNN
 from src.models.simple_cnn import SimpleCNN
 
 
@@ -28,9 +29,8 @@ def test_simple_cnn_shape_range_and_gradients() -> None:
     assert all(parameter.grad is not None for parameter in model.parameters())
 
 
-def test_fusion_contract_when_integrated() -> None:
-    module = pytest.importorskip("src.models.multiscale_fusion_cnn")
-    model = module.MultiScaleFusionCNN(image_size=32, base_ch=8)
+def test_fusion_contract() -> None:
+    model = MultiScaleFusionCNN(image_size=32, base_ch=8)
     inputs = torch.rand(2, 3, 32, 32)
     outputs = model(inputs, return_side_outputs=True)
     assert set(outputs) == {"final", "side1", "side2", "side3", "main"}
