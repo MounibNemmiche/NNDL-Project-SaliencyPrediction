@@ -54,6 +54,7 @@ outputs/runs/
 outputs/backup/
 outputs/evaluation/
 outputs/predictions/
+outputs/drive_share/
 *.pth
 *.pt
 *.ckpt

@@ -4,10 +4,20 @@ PyTorch implementation of vision-based saliency prediction on SALICON. The final
 
 ## Current Integration Status
 
-The dataset, three models, checkpoint/path utilities, and executable train/evaluate/predict pipeline are fully integrated and tested. The final fair benchmarking experiments for SimpleCNN and FusionCNN on the RTX 4090 have been executed.
+The dataset, three models, checkpoint/path utilities, and executable train/evaluate/predict pipeline are fully integrated and tested. The final one-seed benchmarks were run on an NVIDIA GeForce RTX 4060 Ti, as recorded in the saved run metadata, and independently reproduced on an RTX 4060 Laptop GPU.
 
 The complete training checkpoints, metrics CSVs, curves, qualitative prediction grids, and fusion weights can be downloaded from the Google Drive folder:
 **[Google Drive Benchmark Results](https://drive.google.com/drive/folders/1lc0stHBMINM8bdDuhqfzOeHfQdkbwt0u?usp=sharing)**
+
+All models were evaluated on the same fixed 4,500-image test manifest (`test_seed42.txt`). Checkpoint selection used validation CC only.
+
+| Model | MSE (lower) | CC (higher) | SIM (higher) | Parameters |
+|---|---:|---:|---:|---:|
+| Center bias | 0.110151 | 0.537825 | 0.526015 | 0 |
+| SimpleCNN | 0.016436 | 0.785081 | 0.613144 | 979,713 |
+| MultiScaleFusionCNN | **0.014601** | **0.791155** | **0.653238** | 979,945 |
+
+Compared with SimpleCNN, fusion reduces MSE by 11.2% and raises SIM by 6.5% while adding only 232 parameters. These are single-seed results (`seed=42`), so the report must not present them as a mean or standard deviation across repeated runs.
 
 ## Native Setup
 
@@ -82,7 +92,7 @@ python src/smoke_test.py --device cpu
 python src/smoke_test.py --device auto
 ```
 
-Student B must additionally run the same mandatory fusion smoke test on the RTX 4090:
+On an NVIDIA system, also run the mandatory CUDA smoke test:
 
 ```bash
 python src/smoke_test.py --device cuda
