@@ -2,6 +2,7 @@
 PLANS/
 dataset/
 report_assets/
+NNDL- benchmark results on Saliency Predicion/
 
 # ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
@@ -53,6 +54,7 @@ outputs/runs/
 outputs/backup/
 outputs/evaluation/
 outputs/predictions/
+outputs/drive_share/
 *.pth
 *.pt
 *.ckpt
