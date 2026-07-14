@@ -1,0 +1,21 @@
+{
+  "model": "fusion",
+  "checkpoint": "outputs\\runs\\fusion_final\\checkpoints\\best.pth",
+  "checkpoint_sha256": "610787f4dfa727a2ad82229505b44738888c39059d6283bf3fcc0b374555f0e9",
+  "checkpoint_bytes": 11839830,
+  "manifest": "data\\splits\\test_seed42.txt",
+  "split_hash": "7ad21b6a799f",
+  "samples": 4500,
+  "mse": 0.014600976953903834,
+  "cc": 0.791154671880934,
+  "sim": 0.6532375313970777,
+  "parameters": 979945,
+  "trainable_parameters": 979945,
+  "seconds": 44.975555499999246,
+  "inference_seconds": 11.65682070001094,
+  "milliseconds_per_image": 2.5904046000024312,
+  "device": "cuda",
+  "image_dir": "dataset\\images\\images\\val",
+  "map_dir": "dataset\\maps\\val",
+  "image_size": 224
+}

@@ -4,7 +4,10 @@ PyTorch implementation of vision-based saliency prediction on SALICON. The final
 
 ## Current Integration Status
 
-The dataset, three models, checkpoint/path utilities, and executable train/evaluate/predict pipeline are integrated and covered by CPU/CUDA tests. Final training results remain pending; uploaded synthetic pipeline checks are not final SALICON evidence.
+The dataset, three models, checkpoint/path utilities, and executable train/evaluate/predict pipeline are fully integrated and tested. The final fair benchmarking experiments for SimpleCNN and FusionCNN on the RTX 4090 have been executed.
+
+The complete training checkpoints, metrics CSVs, curves, qualitative prediction grids, and fusion weights can be downloaded from the Google Drive folder:
+**[Google Drive Benchmark Results](https://drive.google.com/drive/folders/1lc0stHBMINM8bdDuhqfzOeHfQdkbwt0u?usp=sharing)**
 
 ## Native Setup
 

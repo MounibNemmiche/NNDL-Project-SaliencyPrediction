@@ -1,0 +1,21 @@
+{
+  "model": "center",
+  "checkpoint": "none",
+  "checkpoint_sha256": "not_applicable",
+  "checkpoint_bytes": 0,
+  "manifest": "data\\splits\\test_seed42.txt",
+  "split_hash": "7ad21b6a799f",
+  "samples": 4500,
+  "mse": 0.11015148496627808,
+  "cc": 0.537824601067437,
+  "sim": 0.5260149744616615,
+  "parameters": 0,
+  "trainable_parameters": 0,
+  "seconds": 34.484608200000366,
+  "inference_seconds": 0.03155549998882634,
+  "milliseconds_per_image": 0.007012333330850298,
+  "device": "cuda",
+  "image_dir": "dataset\\images\\images\\val",
+  "map_dir": "dataset\\maps\\val",
+  "image_size": 224
+}
