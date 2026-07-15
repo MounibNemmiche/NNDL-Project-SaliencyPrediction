@@ -4,7 +4,7 @@ PyTorch implementation of vision-based saliency prediction on SALICON. The final
 
 ## Current Integration Status
 
-The dataset, three models, checkpoint/path utilities, and executable train/evaluate/predict pipeline are fully integrated and tested. The final one-seed benchmarks were run on an NVIDIA GeForce RTX 4060 Ti, as recorded in the saved run metadata, and independently reproduced on an RTX 4060 Laptop GPU.
+The dataset, three models, checkpoint/path utilities, and executable train/evaluate/predict pipeline are fully integrated and tested. Six final learned-model runs (two architectures and seeds 42, 7, and 123) were trained on an NVIDIA GeForce RTX 4060 Ti, as recorded in the saved run metadata. Their checkpoints were hash-verified and independently re-evaluated on an RTX 4060 Laptop GPU.
 
 The complete training checkpoints, metrics CSVs, curves, qualitative prediction grids, and fusion weights can be downloaded from the Google Drive folder:
 **[Google Drive Benchmark Results](https://drive.google.com/drive/folders/1lc0stHBMINM8bdDuhqfzOeHfQdkbwt0u?usp=sharing)**
@@ -14,10 +14,10 @@ All models were evaluated on the same fixed 4,500-image test manifest (`test_see
 | Model | MSE (lower) | CC (higher) | SIM (higher) | Parameters |
 |---|---:|---:|---:|---:|
 | Center bias | 0.110151 | 0.537825 | 0.526015 | 0 |
-| SimpleCNN | 0.016436 | 0.785081 | 0.613144 | 979,713 |
-| MultiScaleFusionCNN | **0.014601** | **0.791155** | **0.653238** | 979,945 |
+| SimpleCNN | 0.015306 +/- 0.000982 | 0.788157 +/- 0.002919 | 0.624782 +/- 0.012700 | 979,713 |
+| MultiScaleFusionCNN | **0.014977 +/- 0.000371** | **0.789525 +/- 0.001797** | **0.649212 +/- 0.009487** | 979,945 |
 
-Compared with SimpleCNN, fusion reduces MSE by 11.2% and raises SIM by 6.5% while adding only 232 parameters. These are single-seed results (`seed=42`), so the report must not present them as a mean or standard deviation across repeated runs.
+Learned-model values are mean +/- sample standard deviation over the three seeds. Compared with SimpleCNN, fusion lowers mean MSE by 2.15%, raises CC by 0.001368, and raises SIM by 0.024431 (3.91% relative) while adding only 232 parameters. Fusion improves SIM in every seed; the MSE and CC gains are more initialization-dependent.
 
 ## Native Setup
 
@@ -111,6 +111,23 @@ python -m src.datasets.salicon_dataset \
 
 ## Experiment Pipeline
 
+The final experiment contract is 25 epochs, batch size 64, Adam with learning rate `1e-4`, `MSE + 0.1 * (1 - CC)`, no mixed precision, and seeds 42, 7, and 123. The scripts reproduce these settings and use the historical seed-42 run names (`simple_final` and `fusion_final`) so their paths match the submitted evidence:
+
+```bash
+for seed in 42 7 123; do
+  SEED="$seed" bash scripts/train_simple.sh
+  SEED="$seed" bash scripts/train_fusion.sh
+done
+```
+
+Evaluate all three predictors on the fixed 4,500-image manifest after setting the two checkpoint paths:
+
+```bash
+SIMPLE_CHECKPOINT=outputs/runs/simple_final/checkpoints/best.pth \
+FUSION_CHECKPOINT=outputs/runs/fusion_final/checkpoints/best.pth \
+bash scripts/evaluate_all.sh
+```
+
 Screen a model with a fixed validation split:
 
 ```bash
@@ -147,7 +164,7 @@ python src/evaluate.py \
   --device cuda
 
 python src/evaluate.py \
-  --checkpoint outputs/runs/fusion_final_seed42/checkpoints/best.pth \
+  --checkpoint outputs/runs/fusion_final/checkpoints/best.pth \
   --manifest data/splits/test_seed42.txt \
   --output-dir outputs/evaluation/final_seed42 \
   --visualize outputs/evaluation/final_seed42/fusion_grid.png \
@@ -158,9 +175,9 @@ Generate raw, heatmap, and overlay predictions. CUDA-trained checkpoints can be 
 
 ```bash
 python src/predict.py \
-  --checkpoint outputs/runs/fusion_final_seed42/checkpoints/best.pth \
+  --checkpoint outputs/runs/fusion_final/checkpoints/best.pth \
   --input dataset/images/images/val/COCO_val2014_000000000164.jpg \
-  --output-dir outputs/predictions/fusion_final_seed42 \
+  --output-dir outputs/predictions/fusion_final \
   --save-raw --save-heatmap --save-overlay \
   --device cpu
 ```
